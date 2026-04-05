@@ -1,0 +1,46 @@
+[Týmy]
+Tým 1 | 0
+Tým 2 | 0
+Tým 3 | 0
+
+[Kategorie] VÝLET DO BRUSELU
+20 | Kde sídlí Evropská komise? | V Bruselu
+40 | Jak se jmenuje slavná bruselská soška chlapce? | Manneken Pis
+60 | Které atomium v Bruselu připomíná krystal železa? | Atomyum
+80 | Jak se nazývá hlavní náměstí v Bruselu? | Grand Place
+100 | Která mezinárodní organizace má sídlo v Bruselu (zkratka)? | NATO
+
+[Kategorie] JEDNA SAMOHLÁSKA VYPADLA
+20 | D_M (Dům) | Dům
+40 | K_N (Kůň) | Kůň
+60 | S_L (Sůl) | Sůl
+80 | L_S (Les) | Les
+100 | H_R (Hra) | Hra
+
+[Kategorie] STAROVĚKÉ ŘÍŠE
+20 | Kdo byl prvním císařem Říma? | Augustus
+40 | Která říše stavěla pyramidy? | Egyptská
+60 | Jak se jmenoval slavný kartaginský vojevůdce? | Hannibal
+80 | Kdo vedl perskou říši proti Řecku? | Xerxés
+100 | Která říše ovládala Mezopotámii? | Sumerská
+
+[Kategorie] VELIČINY PODLE JEDNOTEK
+20 | Metr (m) | Délka
+40 | Kilogram (kg) | Hmotnost
+60 | Sekunda (s) | Čas
+80 | Ampér (A) | Elektrický proud
+100 | Kelvin (K) | Termodynamická teplota
+
+[Kategorie] LINGVISTICKÉ "TÍVY"
+20 | Co znamená "tíva" v přeneseném významu? | Obtíž, břemeno
+40 | Jak se tvoří množné číslo? | Přidáním koncovky
+60 | Je "tíva" spisovné slovo? | Ano
+80 | Jaký je rod podstatného jména "tíva"? | Ženský
+100 | Které slovo je antonymem "tívy"? | Lehkost
+
+[Kategorie] VODNÉ VECI
+20 | Co tvoří 70 % povrchu Země? | Voda
+40 | Jak se nazývá změna skupenství z kapaliny na plyn? | Odpařování
+60 | Co je to ledovec? | Masa ledu
+80 | Jak se nazývá největší oceán? | Tichý oceán
+100 | Co je to hydrosféra? | Vodní obal Země

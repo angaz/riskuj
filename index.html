@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riskuj Game</title>
+    <style>
+        :root {
+            --bg-color: #0b2265;
+            --card-bg: #092173;
+            --card-border: #2351af;
+            --text-yellow: #ffcb3d;
+            --text-white: #ffffff;
+            --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #020a26 0%, #0c3396 50%, #020a26 100%);
+            color: var(--text-white);
+            font-family: var(--font-main);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        #game-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        #board-wrapper {
+            position: relative;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #board {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+            flex: 1;
+            transition: opacity 0.3s;
+        }
+
+        .category-header {
+            background-color: var(--card-bg);
+            border: 2px solid var(--card-border);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2vw;
+            padding: 10px;
+            text-transform: uppercase;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
+            line-height: 1.2;
+            cursor: default;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 2px solid var(--card-border);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3vw;
+            font-weight: bold;
+            color: var(--text-yellow);
+            cursor: pointer;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        .card:hover {
+            background-color: #1133a1;
+            transform: scale(1.02);
+        }
+
+        .card.played {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #teams-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            padding-top: 20px;
+            min-height: 100px;
+        }
+
+        .team {
+            background-color: var(--card-bg);
+            border: 2px solid var(--card-border);
+            border-radius: 8px;
+            padding: 10px 20px;
+            text-align: center;
+            min-width: 120px;
+            flex: 0 1 auto;
+        }
+
+        .team-name {
+            font-size: max(1.2vw, 16px);
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .team-score {
+            font-size: max(2vw, 24px);
+            color: var(--text-yellow);
+            font-weight: bold;
+        }
+
+        #active-card-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: scale(0);
+            opacity: 0;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s;
+            pointer-events: none;
+            perspective: 1000px;
+        }
+
+        #active-card-overlay.active {
+            transform: scale(1);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #discard-btn {
+            position: absolute;
+            bottom: 20px;
+            padding: 10px 20px;
+            font-size: 1.5vw;
+            background-color: var(--card-border);
+            color: var(--text-white);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            z-index: 10;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        #discard-btn:hover {
+            background-color: #3366cc;
+        }
+
+        #active-card-overlay.show-answer #discard-btn {
+            opacity: 1;
+            pointer-events: auto;
+            transition: opacity 0.3s ease 0.6s;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        #active-card-overlay.show-answer .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            background-color: var(--card-bg);
+            border: 4px solid var(--text-yellow);
+            border-radius: 16px;
+            padding: 40px;
+            box-sizing: border-box;
+            font-size: 4vw;
+            text-align: center;
+            color: var(--text-white);
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+            color: var(--text-yellow);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 40px;
+            cursor: pointer;
+            color: var(--text-white);
+            z-index: 10;
+        }
+
+        .team.active-scoring {
+            cursor: pointer;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 203, 61, 0.7); }
+            50% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(255, 203, 61, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 203, 61, 0); }
+        }
+
+        /* Celebration Animation Styles */
+        .team {
+            position: relative; /* For particle positioning */
+        }
+
+        .team.celebrate {
+            animation: teamCelebrate 1.5s ease-out;
+        }
+
+        @keyframes teamCelebrate {
+            0% { transform: scale(1); box-shadow: 0 0 0px transparent; }
+            15% { transform: scale(1.1); box-shadow: 0 0 40px var(--text-yellow); border-color: var(--text-yellow); }
+            80% { transform: scale(1.05); box-shadow: 0 0 20px var(--text-yellow); border-color: var(--text-yellow); }
+            100% { transform: scale(1); box-shadow: 0 0 0px transparent; }
+        }
+
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            top: 50%;
+            left: 50%;
+            z-index: 50;
+        }
+
+        @keyframes confettiBurst {
+            0% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; }
+            40% { opacity: 1; }
+            100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0) rotate(var(--rot)); opacity: 0; }
+        }
+
+        /* Edit Mode Styles */
+        #controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 200;
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Specific fix for full screen mode hiding */
+        :fullscreen #controls { display: none !important; }
+        :-webkit-full-screen #controls { display: none !important; }
+        :-moz-full-screen #controls { display: none !important; }
+
+        @media all and (display-mode: fullscreen) {
+            #controls { display: none !important; }
+        }
+
+        #controls button {
+            background-color: var(--card-border);
+            color: var(--text-white);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        #controls button:hover {
+            background-color: #3366cc;
+        }
+
+        body.edit-mode .card, body.edit-mode .category-header, body.edit-mode .team {
+            border: 2px dashed #ffcb3d;
+            cursor: pointer !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
+            animation: none !important;
+        }
+
+        #edit-modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 300;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--bg-color);
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid var(--card-border);
+            width: 80%;
+            max-width: 500px;
+            color: var(--text-white);
+        }
+
+        .modal-content label {
+            display: block;
+            margin-top: 10px;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .modal-content input, .modal-content textarea {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 8px;
+            box-sizing: border-box;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: white;
+            font-family: inherit;
+        }
+
+        .modal-content textarea {
+            height: 100px;
+            resize: vertical;
+        }
+
+        .modal-content button {
+            background-color: var(--card-border);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-top: 15px;
+        }
+
+        .modal-content button:hover {
+            background-color: #3366cc;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="controls">
+        <button id="edit-toggle-btn" onclick="toggleEditMode()">Zapnout režim úprav</button>
+        <button id="reset-game-btn" onclick="resetGame()" style="display:none;">Resetovat hru</button>
+        <button id="import-export-btn" onclick="openImportExport()">Import/Export</button>
+    </div>
+
+    <div id="game-container">
+        <div id="board-wrapper">
+            <div id="board"></div>
+            <div id="active-card-overlay">
+                <div class="close-btn" onclick="closeActiveCard()">×</div>
+                <div class="card-inner" onclick="flipActiveCard()">
+                    <div class="card-front" id="active-q">Otázka</div>
+                    <div class="card-back" id="active-a">Odpověď</div>
+                </div>
+                <button id="discard-btn" onclick="discardQuestion()">Nikdo neví</button>
+            </div>
+        </div>
+        <div id="teams-container"></div>
+    </div>
+
+    <div id="edit-modal" style="display:none;">
+        <div class="modal-content">
+            <h3 id="edit-modal-title">Upravit</h3>
+            <div id="edit-modal-body"></div>
+            <button onclick="saveEdit()">Uložit</button>
+            <button onclick="closeEditModal()">Zrušit</button>
+        </div>
+    </div>
+
+    <script>
+        // Default Data Structure
+        const defaultData = {
+            teams: [
+                { id: 'team1', name: 'Tým 1', score: 0 },
+                { id: 'team2', name: 'Tým 2', score: 0 },
+                { id: 'team3', name: 'Tým 3', score: 0 }
+            ],
+            categories: [
+                { name: 'VÝLET DO BRUSELU', questions: [] },
+                { name: 'JEDNA SAMOHLÁSKA VYPADLA', questions: [] },
+                { name: 'STAROVĚKÉ ŘÍŠE', questions: [] },
+                { name: 'VELIČINY PODLE JEDNOTEK', questions: [] },
+                { name: 'LINGVISTICKÉ "TÍVY"', questions: [] },
+                { name: 'VODNÉ VECI', questions: [] }
+            ]
+        };
+
+        // Populate questions with default values
+        defaultData.categories.forEach(cat => {
+            for (let i = 1; i <= 5; i++) {
+                cat.questions.push({
+                    points: i * 20,
+                    q: `Otázka pro ${cat.name} - ${i * 20}`,
+                    a: `Odpověď pro ${cat.name} - ${i * 20}`,
+                    played: false
+                });
+            }
+        });
+
+        let gameState = null;
+        let isEditMode = false;
+        let editTarget = null; // { type: 'category'|'question'|'team', col: x, row: y, index: i }
+
+        function loadState() {
+            const saved = localStorage.getItem('riskujState');
+            if (saved) {
+                gameState = JSON.parse(saved);
+            } else {
+                gameState = JSON.parse(JSON.stringify(defaultData));
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem('riskujState', JSON.stringify(gameState));
+        }
+
+        function renderBoard() {
+            const boardEl = document.getElementById('board');
+            boardEl.innerHTML = '';
+
+            // Render Headers
+            gameState.categories.forEach((cat, colIndex) => {
+                const header = document.createElement('div');
+                header.className = 'category-header';
+                header.textContent = cat.name;
+                header.onclick = () => {
+                    if (isEditMode) openEditModal('category', { col: colIndex });
+                };
+                boardEl.appendChild(header);
+            });
+
+            // Render Cards (Rows)
+            for (let row = 0; row < 5; row++) {
+                gameState.categories.forEach((cat, colIndex) => {
+                    const question = cat.questions[row];
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    if (question.played && !isEditMode) {
+                        card.classList.add('played');
+                    }
+                    card.textContent = question.points;
+                    card.dataset.col = colIndex;
+                    card.dataset.row = row;
+                    card.onclick = () => handleCardClick(colIndex, row);
+                    boardEl.appendChild(card);
+                });
+            }
+        }
+
+        function renderTeams() {
+            const teamsEl = document.getElementById('teams-container');
+            teamsEl.innerHTML = '';
+
+            gameState.teams.forEach((team, index) => {
+                const teamEl = document.createElement('div');
+                teamEl.className = 'team';
+                teamEl.innerHTML = `
+                    <div class="team-name">${team.name}</div>
+                    <div class="team-score">${team.score}</div>
+                `;
+                teamEl.onclick = () => handleTeamClick(index);
+                teamsEl.appendChild(teamEl);
+            });
+        }
+
+        let activeCol = null;
+        let activeRow = null;
+        let isFlipped = false;
+
+        function handleCardClick(col, row) {
+            if (isEditMode) {
+                openEditModal('question', { col, row });
+                return;
+            }
+
+            if (gameState.categories[col].questions[row].played) return;
+
+            activeCol = col;
+            activeRow = row;
+            isFlipped = false;
+
+            const question = gameState.categories[col].questions[row];
+            document.getElementById('active-q').textContent = question.q;
+            document.getElementById('active-a').textContent = question.a;
+
+            const overlay = document.getElementById('active-card-overlay');
+            overlay.classList.remove('show-answer');
+            overlay.classList.add('active');
+
+            document.getElementById('board').style.opacity = '0';
+
+            document.querySelectorAll('.team').forEach(t => t.classList.add('active-scoring'));
+        }
+
+        function flipActiveCard() {
+            if (!isFlipped && !isEditMode) {
+                document.getElementById('active-card-overlay').classList.add('show-answer');
+                isFlipped = true;
+            }
+        }
+
+        function closeActiveCard() {
+            document.getElementById('active-card-overlay').classList.remove('active');
+            document.getElementById('board').style.opacity = '1';
+            document.querySelectorAll('.team').forEach(t => t.classList.remove('active-scoring'));
+            activeCol = null;
+            activeRow = null;
+        }
+
+        function createFireworks(teamEl) {
+            teamEl.classList.add('celebrate');
+            setTimeout(() => teamEl.classList.remove('celebrate'), 1500);
+
+            const colors = ['#ffcb3d', '#ffffff', '#ff5722', '#4caf50', '#00bcd4', '#e91e63', '#9c27b0'];
+            const numParticles = 80;
+
+            for (let i = 0; i < numParticles; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+
+                // Randomly mix circles and rectangular confetti
+                if (Math.random() > 0.5) {
+                    particle.style.borderRadius = '50%';
+                    const size = 5 + Math.random() * 8;
+                    particle.style.width = size + 'px';
+                    particle.style.height = size + 'px';
+                } else {
+                    particle.style.width = (6 + Math.random() * 8) + 'px';
+                    particle.style.height = (10 + Math.random() * 10) + 'px';
+                }
+
+                // Random angle and distance to shoot
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 100 + Math.random() * 300; // Increased distance to 100-400px
+
+                // Calculate trajectory, adding a fake "gravity" drop on the Y axis at the end
+                const dx = Math.cos(angle) * distance + 'px';
+                const dy = (Math.sin(angle) * distance + 150) + 'px'; 
+                const rot = (Math.random() * 720 - 360) + 'deg';
+
+                particle.style.setProperty('--dx', dx);
+                particle.style.setProperty('--dy', dy);
+                particle.style.setProperty('--rot', rot);
+
+                const duration = 1000 + Math.random() * 1500; // Randomize duration between 1s and 2.5s
+                particle.style.animation = `confettiBurst ${duration}ms cubic-bezier(0.1, 0.8, 0.3, 1) forwards`;
+
+                teamEl.appendChild(particle);
+
+                // Cleanup after animation
+                setTimeout(() => particle.remove(), duration);
+            }
+        }
+
+        function handleTeamClick(teamIndex) {
+            if (isEditMode) {
+                openEditModal('team', { index: teamIndex });
+                return;
+            }
+
+            if (activeCol !== null && activeRow !== null) {
+                const points = gameState.categories[activeCol].questions[activeRow].points;
+                gameState.teams[teamIndex].score += points;
+
+                gameState.categories[activeCol].questions[activeRow].played = true;
+
+                saveState();
+
+                // Efficient DOM updates
+                const teamEl = document.querySelectorAll('.team')[teamIndex];
+                teamEl.querySelector('.team-score').textContent = gameState.teams[teamIndex].score;
+                document.querySelector(`.card[data-col="${activeCol}"][data-row="${activeRow}"]`).classList.add('played');
+
+                createFireworks(teamEl);
+
+                closeActiveCard();
+            }
+        }
+
+        function discardQuestion() {
+            if (activeCol !== null && activeRow !== null) {
+                gameState.categories[activeCol].questions[activeRow].played = true;
+                saveState();
+
+                document.querySelector(`.card[data-col="${activeCol}"][data-row="${activeRow}"]`).classList.add('played');
+
+                closeActiveCard();
+            }
+        }
+
+        // Edit Mode Logic
+        function toggleEditMode() {
+            isEditMode = !isEditMode;
+            document.body.classList.toggle('edit-mode', isEditMode);
+            const btn = document.getElementById('edit-toggle-btn');
+            const resetBtn = document.getElementById('reset-game-btn');
+
+            if (isEditMode) {
+                btn.textContent = "Vypnout režim úprav";
+                resetBtn.style.display = "block";
+            } else {
+                btn.textContent = "Zapnout režim úprav";
+                resetBtn.style.display = "none";
+            }
+            renderBoard(); // re-render to show/hide played cards
+        }
+
+        function resetGame() {
+            if (confirm("Opravdu chcete resetovat všechna skóre a odehrané karty? Data NEBUDOU smazána.")) {
+                gameState.teams.forEach(t => t.score = 0);
+                gameState.categories.forEach(c => c.questions.forEach(q => q.played = false));
+                saveState();
+                renderBoard();
+                renderTeams();
+            }
+        }
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                }[tag])
+            );
+        }
+
+        function openEditModal(type, target) {
+            editTarget = { type, ...target };
+            const modal = document.getElementById('edit-modal');
+            const title = document.getElementById('edit-modal-title');
+            const body = document.getElementById('edit-modal-body');
+
+            body.innerHTML = '';
+
+            if (type === 'category') {
+                title.textContent = 'Upravit kategorii';
+                const val = gameState.categories[target.col].name;
+                body.innerHTML = `
+                    <label>Název kategorie</label>
+                    <input type="text" id="edit-val-1" value="${escapeHTML(val)}">
+                `;
+            } else if (type === 'team') {
+                title.textContent = 'Upravit tým';
+                const team = gameState.teams[target.index];
+                body.innerHTML = `
+                    <label>Název týmu</label>
+                    <input type="text" id="edit-val-1" value="${escapeHTML(team.name)}">
+                    <label>Skóre</label>
+                    <input type="number" id="edit-val-2" value="${team.score}">
+                `;
+            } else if (type === 'question') {
+                title.textContent = 'Upravit otázku';
+                const q = gameState.categories[target.col].questions[target.row];
+                body.innerHTML = `
+                    <label>Body</label>
+                    <input type="number" id="edit-val-1" value="${q.points}">
+                    <label>Otázka</label>
+                    <textarea id="edit-val-2">${escapeHTML(q.q)}</textarea>
+                    <label>Odpověď</label>
+                    <textarea id="edit-val-3">${escapeHTML(q.a)}</textarea>
+                `;
+            }
+
+            modal.style.display = 'flex';
+        }
+
+        function closeEditModal() {
+            document.getElementById('edit-modal').style.display = 'none';
+            editTarget = null;
+        }
+
+        function openImportExport() {
+            editTarget = { type: 'import-export' };
+            const modal = document.getElementById('edit-modal');
+            const title = document.getElementById('edit-modal-title');
+            const body = document.getElementById('edit-modal-body');
+
+            title.textContent = 'Import / Export dat hry';
+
+            const exportText = generateExportText();
+
+            body.innerHTML = `
+                <p style="font-size: 14px; margin-bottom: 10px;">
+                    Zkopírujte tento text pro uložení hry nebo jeho úpravu v textovém editoru.<br>
+                    Vložte text sem a klikněte na Uložit pro jeho import.
+                </p>
+                <textarea id="import-export-textarea" style="height: 300px; font-family: monospace; white-space: pre;">${exportText}</textarea>
+            `;
+
+            modal.style.display = 'flex';
+        }
+
+        function generateExportText() {
+            let lines = [];
+            lines.push("[Týmy]");
+            gameState.teams.forEach(t => lines.push(`${t.name} | ${t.score}`));
+            lines.push("");
+
+            gameState.categories.forEach(cat => {
+                lines.push(`[Kategorie] ${cat.name}`);
+                cat.questions.forEach(q => {
+                    const cleanQ = q.q.replace(/\n/g, '\\n');
+                    const cleanA = q.a.replace(/\n/g, '\\n');
+                    lines.push(`${q.points} | ${cleanQ} | ${cleanA}`);
+                });
+                lines.push("");
+            });
+            return lines.join("\n");
+        }
+
+        function parseImportText(text) {
+            const newGameState = { teams: [], categories: [] };
+            const lines = text.split('\n');
+            let currentMode = null;
+            let currentCategory = null;
+
+            for (let line of lines) {
+                line = line.trim();
+                if (!line) continue;
+
+                if (line === '[Týmy]') {
+                    currentMode = 'teams';
+                    continue;
+                }
+
+                if (line.startsWith('[Kategorie]')) {
+                    currentMode = 'category';
+                    const catName = line.substring(11).trim();
+                    currentCategory = { name: catName, questions: [] };
+                    newGameState.categories.push(currentCategory);
+                    continue;
+                }
+
+                if (currentMode === 'teams') {
+                    const parts = line.split('|').map(s => s.trim());
+                    if (parts.length >= 1) {
+                        newGameState.teams.push({
+                            id: `team${newGameState.teams.length + 1}`,
+                            name: parts[0],
+                            score: parseInt(parts[1]) || 0
+                        });
+                    }
+                } else if (currentMode === 'category' && currentCategory) {
+                    const parts = line.split('|').map(s => s.trim());
+                    if (parts.length >= 3) {
+                        currentCategory.questions.push({
+                            points: parseInt(parts[0]) || 0,
+                            q: parts[1].replace(/\\n/g, '\n'),
+                            a: parts[2].replace(/\\n/g, '\n'),
+                            played: false
+                        });
+                    }
+                }
+            }
+
+            while (newGameState.categories.length < 6) {
+                newGameState.categories.push({ name: 'EMPTY', questions: [] });
+            }
+            newGameState.categories = newGameState.categories.slice(0, 6);
+
+            newGameState.categories.forEach(cat => {
+                while (cat.questions.length < 5) {
+                    cat.questions.push({ points: 0, q: '', a: '', played: false });
+                }
+                cat.questions = cat.questions.slice(0, 5);
+            });
+
+            while (newGameState.teams.length < 3) {
+                newGameState.teams.push({ id: `team${newGameState.teams.length+1}`, name: `Team ${newGameState.teams.length+1}`, score: 0 });
+            }
+
+            return newGameState;
+        }
+
+        function saveEdit() {
+            if (!editTarget) return;
+
+            if (editTarget.type === 'category') {
+                gameState.categories[editTarget.col].name = document.getElementById('edit-val-1').value;
+            } else if (editTarget.type === 'team') {
+                gameState.teams[editTarget.index].name = document.getElementById('edit-val-1').value;
+                gameState.teams[editTarget.index].score = parseInt(document.getElementById('edit-val-2').value) || 0;
+            } else if (editTarget.type === 'question') {
+                const q = gameState.categories[editTarget.col].questions[editTarget.row];
+                q.points = parseInt(document.getElementById('edit-val-1').value) || 0;
+                q.q = document.getElementById('edit-val-2').value;
+                q.a = document.getElementById('edit-val-3').value;
+            } else if (editTarget.type === 'import-export') {
+                const text = document.getElementById('import-export-textarea').value;
+                gameState = parseImportText(text);
+            }
+
+            saveState();
+            renderBoard();
+            renderTeams();
+            closeEditModal();
+        }
+
+        // Initialization
+        loadState();
+        renderBoard();
+        renderTeams();
+
+        // Check for F11 full screen (cross-browser)
+        function checkFullscreen() {
+            const isFullscreen = 
+                window.fullScreen || // Firefox specific
+                (window.innerWidth === screen.width && window.innerHeight === screen.height) || 
+                (document.fullscreenElement != null) ||
+                window.matchMedia("(display-mode: fullscreen)").matches;
+
+            if (isFullscreen) {
+                document.body.classList.add('is-fullscreen');
+            } else {
+                document.body.classList.remove('is-fullscreen');
+            }
+        }
+        window.addEventListener('resize', checkFullscreen);
+        document.addEventListener('fullscreenchange', checkFullscreen);
+        document.addEventListener('mozfullscreenchange', checkFullscreen);
+        document.addEventListener('webkitfullscreenchange', checkFullscreen);
+        document.addEventListener('msfullscreenchange', checkFullscreen);
+        checkFullscreen();
+
+    </script>
+</body>
+</html>

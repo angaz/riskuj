@@ -602,6 +602,21 @@
                 };
                 teamsEl.appendChild(teamEl);
             });
+
+            if (isEditMode) {
+                const addTeamBtn = document.createElement('div');
+                addTeamBtn.className = 'team add-team-btn';
+                addTeamBtn.style.cursor = 'pointer';
+                addTeamBtn.style.display = 'flex';
+                addTeamBtn.style.alignItems = 'center';
+                addTeamBtn.style.justifyContent = 'center';
+                addTeamBtn.style.borderStyle = 'dashed';
+                addTeamBtn.style.fontSize = '2vw';
+                addTeamBtn.style.color = 'var(--text-yellow)';
+                addTeamBtn.textContent = '+';
+                addTeamBtn.onclick = () => addTeam();
+                teamsEl.appendChild(addTeamBtn);
+            }
         }
 
         let activeCol = null;
@@ -785,6 +800,7 @@
                 resetBtn.style.display = "none";
             }
             renderBoard(); // re-render to show/hide played cards
+            renderTeams(); // re-render to show/hide add team button
         }
 
         function resetGame() {
@@ -888,7 +904,7 @@
         function generateExportText() {
             let lines = [];
             lines.push("[Týmy]");
-            gameState.teams.forEach(t => lines.push(`${t.name} | ${t.score}`));
+            gameState.teams.forEach(t => lines.push(`${t.name} ; ${t.score}`));
             lines.push("");
 
             gameState.categories.forEach(cat => {
@@ -896,7 +912,7 @@
                 cat.questions.forEach(q => {
                     const cleanQ = q.q.replace(/\n/g, '\\n');
                     const cleanA = q.a.replace(/\n/g, '\\n');
-                    lines.push(`${q.points} | ${cleanQ} | ${cleanA}`);
+                    lines.push(`${q.points} ; ${cleanQ} ; ${cleanA}`);
                 });
                 lines.push("");
             });
@@ -927,21 +943,39 @@
                 }
 
                 if (currentMode === 'teams') {
-                    const parts = line.split('|').map(s => s.trim());
-                    if (parts.length >= 1) {
+                    // Try space-semicolon-space first, fall back to pipe
+                    let sep = line.includes(' ; ') ? ' ; ' : (line.includes(' | ') ? ' | ' : (line.includes(';') ? ';' : '|'));
+                    let parts = line.split(sep);
+                    
+                    if (parts.length >= 2) {
+                        const scoreStr = parts.pop();
+                        const nameStr = parts.join(sep);
                         newGameState.teams.push({
                             id: `team${newGameState.teams.length + 1}`,
-                            name: parts[0],
-                            score: parseInt(parts[1]) || 0
+                            name: nameStr.trim(),
+                            score: parseInt(scoreStr.trim()) || 0
+                        });
+                    } else if (parts.length === 1) {
+                        newGameState.teams.push({
+                            id: `team${newGameState.teams.length + 1}`,
+                            name: parts[0].trim(),
+                            score: 0
                         });
                     }
                 } else if (currentMode === 'category' && currentCategory) {
-                    const parts = line.split('|').map(s => s.trim());
+                    // Try space-semicolon-space first, fall back to pipe
+                    let sep = line.includes(' ; ') ? ' ; ' : (line.includes(' | ') ? ' | ' : (line.includes(';') ? ';' : '|'));
+                    let parts = line.split(sep);
+                    
                     if (parts.length >= 3) {
+                        const pointsStr = parts.shift();
+                        const aStr = parts.pop();
+                        const qStr = parts.join(sep); // Everything left in the middle is the question
+                        
                         currentCategory.questions.push({
-                            points: parseInt(parts[0]) || 0,
-                            q: parts[1].replace(/\\n/g, '\n'),
-                            a: parts[2].replace(/\\n/g, '\n'),
+                            points: parseInt(pointsStr.trim()) || 0,
+                            q: qStr.trim().replace(/\\n/g, '\n'),
+                            a: aStr.trim().replace(/\\n/g, '\n'),
                             played: false
                         });
                     }
@@ -1001,6 +1035,13 @@
             gameState.categories.push({ name: 'Nová kategorie', questions: [] });
             saveState();
             renderBoard();
+        }
+
+        function addTeam() {
+            const nextId = gameState.teams.length + 1;
+            gameState.teams.push({ id: `team${nextId}`, name: `Tým ${nextId}`, score: 0 });
+            saveState();
+            renderTeams();
         }
 
         function addQuestion(colIndex) {

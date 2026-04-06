@@ -106,6 +106,7 @@
         #teams-container {
             display: flex;
             justify-content: center;
+            align-items: stretch; /* Make all items in the row the same height */
             flex-wrap: wrap;
             gap: 15px;
             padding-top: 20px;
@@ -119,17 +120,22 @@
             padding: 10px 20px;
             text-align: center;
             min-width: 120px;
-            flex: 0 1 auto;
+            flex: 0 0 auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
 
         .team-name {
-            font-size: max(1.2vw, 16px);
             font-weight: bold;
             margin-bottom: 5px;
+            white-space: pre-wrap;
+            word-break: break-word; /* Ensure very long words wrap */
         }
 
         .team-score {
-            font-size: max(2vw, 24px);
             color: var(--text-yellow);
             font-weight: bold;
         }
@@ -594,12 +600,41 @@
             const teamsEl = document.getElementById('teams-container');
             teamsEl.innerHTML = '';
 
+            // Calculate dynamic sizing based on number of teams
+            const numTeams = gameState.teams.length + (isEditMode ? 1 : 0);
+            
+            // Base sizes
+            let padding = '10px 20px';
+            let nameSize = 'max(1.2vw, 16px)';
+            let scoreSize = 'max(2vw, 24px)';
+            let minWidth = '120px';
+            let maxWidth = '200px';
+
+            // Shrink if there are too many teams
+            if (numTeams > 8) {
+                padding = '4px 8px';
+                nameSize = 'max(0.8vw, 10px)';
+                scoreSize = 'max(1.2vw, 14px)';
+                minWidth = '60px';
+                maxWidth = '100px';
+            } else if (numTeams > 5) {
+                padding = '6px 12px';
+                nameSize = 'max(1vw, 12px)';
+                scoreSize = 'max(1.5vw, 18px)';
+                minWidth = '90px';
+                maxWidth = '150px';
+            }
+
             gameState.teams.forEach((team, index) => {
                 const teamEl = document.createElement('div');
                 teamEl.className = 'team';
+                teamEl.style.padding = padding;
+                teamEl.style.minWidth = minWidth;
+                teamEl.style.maxWidth = maxWidth;
+                
                 teamEl.innerHTML = `
-                    <div class="team-name">${team.name}</div>
-                    <div class="team-score">${team.score}</div>
+                    <div class="team-name" style="font-size: ${nameSize}">${team.name}</div>
+                    <div class="team-score" style="font-size: ${scoreSize}">${team.score}</div>
                 `;
                 teamEl.onclick = () => handleTeamClick(index);
                 teamEl.oncontextmenu = (e) => {
@@ -612,12 +647,14 @@
             if (isEditMode) {
                 const addTeamBtn = document.createElement('div');
                 addTeamBtn.className = 'team add-team-btn';
+                addTeamBtn.style.padding = padding;
+                addTeamBtn.style.minWidth = minWidth;
                 addTeamBtn.style.cursor = 'pointer';
                 addTeamBtn.style.display = 'flex';
                 addTeamBtn.style.alignItems = 'center';
                 addTeamBtn.style.justifyContent = 'center';
                 addTeamBtn.style.borderStyle = 'dashed';
-                addTeamBtn.style.fontSize = '2vw';
+                addTeamBtn.style.fontSize = scoreSize; // Match the score size for the + icon
                 addTeamBtn.style.color = 'var(--text-yellow)';
                 addTeamBtn.textContent = '+';
                 addTeamBtn.onclick = () => addTeam();

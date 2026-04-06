@@ -44,10 +44,19 @@
 
         #board {
             display: grid;
-            grid-template-columns: repeat(6, 1fr);
+            grid-template-rows: max-content 1fr;
+            grid-auto-columns: minmax(150px, 1fr);
             gap: 10px;
             flex: 1;
             transition: opacity 0.3s;
+            overflow-x: auto;
+        }
+
+        .category-cards {
+            display: grid;
+            grid-auto-flow: column;
+            gap: 10px;
+            /* No flex: 1 needed since grid parent handles sizing */
         }
 
         .category-header {
@@ -207,11 +216,43 @@
             font-size: 4vw;
             text-align: center;
             color: var(--text-white);
+            white-space: pre-wrap;
+            overflow-y: auto;
+        }
+
+        /* Customize scrollbar for cards */
+        .card-front::-webkit-scrollbar, .card-back::-webkit-scrollbar {
+            width: 8px;
+        }
+        .card-front::-webkit-scrollbar-track, .card-back::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+        .card-front::-webkit-scrollbar-thumb, .card-back::-webkit-scrollbar-thumb {
+            background: var(--card-border);
+            border-radius: 4px;
+        }
+        .card-front::-webkit-scrollbar-thumb:hover, .card-back::-webkit-scrollbar-thumb:hover {
+            background: var(--text-yellow);
         }
 
         .card-back {
             transform: rotateY(180deg);
             color: var(--text-yellow);
+        }
+
+        .card-back-q {
+            font-size: 2vw;
+            color: var(--text-white);
+            margin-bottom: 20px;
+            opacity: 0.8;
+            font-weight: normal;
+        }
+
+        .card-back-a {
+            font-size: 4vw;
+            color: var(--text-yellow);
+            font-weight: bold;
         }
 
         .close-btn {
@@ -249,6 +290,15 @@
             15% { transform: scale(1.1); box-shadow: 0 0 40px var(--text-yellow); border-color: var(--text-yellow); }
             80% { transform: scale(1.05); box-shadow: 0 0 20px var(--text-yellow); border-color: var(--text-yellow); }
             100% { transform: scale(1); box-shadow: 0 0 0px transparent; }
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            20% { transform: translateX(-10px); }
+            40% { transform: translateX(10px); }
+            60% { transform: translateX(-10px); }
+            80% { transform: translateX(10px); }
+            100% { transform: translateX(0); }
         }
 
         .particle {
@@ -304,6 +354,23 @@
             opacity: 1 !important;
             pointer-events: auto !important;
             animation: none !important;
+        }
+
+        .add-card-btn {
+            background-color: transparent;
+            border: 2px dashed var(--text-yellow) !important;
+            color: var(--text-yellow);
+            font-size: 4vw;
+        }
+
+        .add-card-btn:hover {
+            background-color: rgba(255, 203, 61, 0.1);
+        }
+
+        .add-category-col {
+            font-size: 3vw;
+            cursor: pointer;
+            min-width: 80px;
         }
 
         #edit-modal {
@@ -381,7 +448,10 @@
                 <div class="close-btn" onclick="closeActiveCard()">×</div>
                 <div class="card-inner" onclick="flipActiveCard()">
                     <div class="card-front" id="active-q">Otázka</div>
-                    <div class="card-back" id="active-a">Odpověď</div>
+                    <div class="card-back">
+                        <div class="card-back-q" id="active-a-q"></div>
+                        <div class="card-back-a" id="active-a-text">Odpověď</div>
+                    </div>
                 </div>
                 <button id="discard-btn" onclick="discardQuestion()">Nikdo neví</button>
             </div>
@@ -395,6 +465,7 @@
             <div id="edit-modal-body"></div>
             <button onclick="saveEdit()">Uložit</button>
             <button onclick="closeEditModal()">Zrušit</button>
+            <button id="delete-btn" onclick="deleteEdit()" style="background-color: #d32f2f; display: none; float: right;">Smazat</button>
         </div>
     </div>
 
@@ -448,22 +519,36 @@
         function renderBoard() {
             const boardEl = document.getElementById('board');
             boardEl.innerHTML = '';
+            
+            let currentCol = 1;
 
-            // Render Headers
+            let globalMaxRows = 1;
+            gameState.categories.forEach(cat => {
+                const numQs = cat.questions.length + (isEditMode ? 1 : 0);
+                globalMaxRows = Math.max(globalMaxRows, Math.min(numQs, 5));
+            });
+
             gameState.categories.forEach((cat, colIndex) => {
+                const numQuestions = cat.questions.length + (isEditMode ? 1 : 0);
+                const cols = Math.max(1, Math.ceil(numQuestions / 5));
+
                 const header = document.createElement('div');
                 header.className = 'category-header';
                 header.textContent = cat.name;
+                header.style.gridColumn = `${currentCol} / span ${cols}`;
+                header.style.gridRow = '1';
                 header.onclick = () => {
                     if (isEditMode) openEditModal('category', { col: colIndex });
                 };
                 boardEl.appendChild(header);
-            });
 
-            // Render Cards (Rows)
-            for (let row = 0; row < 5; row++) {
-                gameState.categories.forEach((cat, colIndex) => {
-                    const question = cat.questions[row];
+                const cardsContainer = document.createElement('div');
+                cardsContainer.className = 'category-cards';
+                cardsContainer.style.gridColumn = `${currentCol} / span ${cols}`;
+                cardsContainer.style.gridRow = '2';
+                cardsContainer.style.gridTemplateRows = `repeat(${globalMaxRows}, 1fr)`;
+                
+                cat.questions.forEach((question, rowIndex) => {
                     const card = document.createElement('div');
                     card.className = 'card';
                     if (question.played && !isEditMode) {
@@ -471,10 +556,31 @@
                     }
                     card.textContent = question.points;
                     card.dataset.col = colIndex;
-                    card.dataset.row = row;
-                    card.onclick = () => handleCardClick(colIndex, row);
-                    boardEl.appendChild(card);
+                    card.dataset.row = rowIndex;
+                    card.onclick = () => handleCardClick(colIndex, rowIndex);
+                    cardsContainer.appendChild(card);
                 });
+
+                if (isEditMode) {
+                    const addBtn = document.createElement('div');
+                    addBtn.className = 'card add-card-btn';
+                    addBtn.textContent = '+';
+                    addBtn.onclick = () => addQuestion(colIndex);
+                    cardsContainer.appendChild(addBtn);
+                }
+
+                boardEl.appendChild(cardsContainer);
+                currentCol += cols;
+            });
+
+            if (isEditMode) {
+                const addCatBtn = document.createElement('div');
+                addCatBtn.className = 'category-header add-category-col';
+                addCatBtn.textContent = '+';
+                addCatBtn.style.gridColumn = `${currentCol} / span 1`;
+                addCatBtn.style.gridRow = '1 / span 2';
+                addCatBtn.onclick = () => addCategory();
+                boardEl.appendChild(addCatBtn);
             }
         }
 
@@ -490,6 +596,10 @@
                     <div class="team-score">${team.score}</div>
                 `;
                 teamEl.onclick = () => handleTeamClick(index);
+                teamEl.oncontextmenu = (e) => {
+                    e.preventDefault(); // Prevent standard right-click menu
+                    handleTeamRightClick(index);
+                };
                 teamsEl.appendChild(teamEl);
             });
         }
@@ -512,7 +622,8 @@
 
             const question = gameState.categories[col].questions[row];
             document.getElementById('active-q').textContent = question.q;
-            document.getElementById('active-a').textContent = question.a;
+            document.getElementById('active-a-q').textContent = question.q;
+            document.getElementById('active-a-text').textContent = question.a;
 
             const overlay = document.getElementById('active-card-overlay');
             overlay.classList.remove('show-answer');
@@ -609,6 +720,45 @@
             }
         }
 
+        function handleTeamRightClick(teamIndex) {
+            if (isEditMode) return;
+
+            if (activeCol !== null && activeRow !== null) {
+                const points = gameState.categories[activeCol].questions[activeRow].points;
+                gameState.teams[teamIndex].score -= points; // Deduct points
+
+                saveState();
+
+                // Efficient DOM updates
+                const teamEl = document.querySelectorAll('.team')[teamIndex];
+                teamEl.querySelector('.team-score').textContent = gameState.teams[teamIndex].score;
+                
+                // Add a brief red shake animation for penalty
+                teamEl.style.animation = 'shake 0.5s';
+                teamEl.style.boxShadow = '0 0 20px #f44336';
+                teamEl.style.borderColor = '#f44336';
+                
+                setTimeout(() => {
+                    teamEl.style.animation = '';
+                    teamEl.style.boxShadow = '';
+                    teamEl.style.borderColor = '';
+                    
+                    // Resynchronize the pulsing animation for all active teams
+                    const activeTeams = document.querySelectorAll('.team.active-scoring');
+                    activeTeams.forEach(t => { t.style.animation = 'none'; });
+                    
+                    // Trigger reflow to apply the 'none' state
+                    void document.body.offsetHeight;
+                    
+                    // Remove 'none' to restart the CSS animation on all teams simultaneously
+                    activeTeams.forEach(t => { t.style.animation = ''; });
+                }, 500);
+
+                // Note: We deliberately DO NOT mark the card as played or close it.
+                // This leaves the question open for other teams to steal.
+            }
+        }
+
         function discardQuestion() {
             if (activeCol !== null && activeRow !== null) {
                 gameState.categories[activeCol].questions[activeRow].played = true;
@@ -664,8 +814,10 @@
             const modal = document.getElementById('edit-modal');
             const title = document.getElementById('edit-modal-title');
             const body = document.getElementById('edit-modal-body');
+            const deleteBtn = document.getElementById('delete-btn');
 
             body.innerHTML = '';
+            deleteBtn.style.display = 'none';
 
             if (type === 'category') {
                 title.textContent = 'Upravit kategorii';
@@ -674,6 +826,7 @@
                     <label>Název kategorie</label>
                     <input type="text" id="edit-val-1" value="${escapeHTML(val)}">
                 `;
+                deleteBtn.style.display = 'inline-block';
             } else if (type === 'team') {
                 title.textContent = 'Upravit tým';
                 const team = gameState.teams[target.index];
@@ -683,6 +836,7 @@
                     <label>Skóre</label>
                     <input type="number" id="edit-val-2" value="${team.score}">
                 `;
+                deleteBtn.style.display = 'inline-block';
             } else if (type === 'question') {
                 title.textContent = 'Upravit otázku';
                 const q = gameState.categories[target.col].questions[target.row];
@@ -694,6 +848,9 @@
                     <label>Odpověď</label>
                     <textarea id="edit-val-3">${escapeHTML(q.a)}</textarea>
                 `;
+                deleteBtn.style.display = 'inline-block';
+            } else if (type === 'import-export') {
+                // Ensure delete button is hidden for import/export
             }
 
             modal.style.display = 'flex';
@@ -719,6 +876,9 @@
                     Zkopírujte tento text pro uložení hry nebo jeho úpravu v textovém editoru.<br>
                     Vložte text sem a klikněte na Uložit pro jeho import.
                 </p>
+                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <button onclick="navigator.clipboard.writeText(document.getElementById('import-export-textarea').value).then(() => alert('Zkopírováno!'))" style="margin-top: 0; background-color: var(--text-yellow); color: var(--bg-color);">Kopírovat do schránky</button>
+                </div>
                 <textarea id="import-export-textarea" style="height: 300px; font-family: monospace; white-space: pre;">${exportText}</textarea>
             `;
 
@@ -788,18 +948,6 @@
                 }
             }
 
-            while (newGameState.categories.length < 6) {
-                newGameState.categories.push({ name: 'EMPTY', questions: [] });
-            }
-            newGameState.categories = newGameState.categories.slice(0, 6);
-
-            newGameState.categories.forEach(cat => {
-                while (cat.questions.length < 5) {
-                    cat.questions.push({ points: 0, q: '', a: '', played: false });
-                }
-                cat.questions = cat.questions.slice(0, 5);
-            });
-
             while (newGameState.teams.length < 3) {
                 newGameState.teams.push({ id: `team${newGameState.teams.length+1}`, name: `Team ${newGameState.teams.length+1}`, score: 0 });
             }
@@ -831,10 +979,72 @@
             closeEditModal();
         }
 
+        function deleteEdit() {
+            if (!editTarget) return;
+            if (!confirm("Opravdu chcete smazat tuto položku?")) return;
+
+            if (editTarget.type === 'category') {
+                gameState.categories.splice(editTarget.col, 1);
+            } else if (editTarget.type === 'team') {
+                gameState.teams.splice(editTarget.index, 1);
+            } else if (editTarget.type === 'question') {
+                gameState.categories[editTarget.col].questions.splice(editTarget.row, 1);
+            }
+
+            saveState();
+            renderBoard();
+            renderTeams();
+            closeEditModal();
+        }
+
+        function addCategory() {
+            gameState.categories.push({ name: 'Nová kategorie', questions: [] });
+            saveState();
+            renderBoard();
+        }
+
+        function addQuestion(colIndex) {
+            const cat = gameState.categories[colIndex];
+            const lastPoints = cat.questions.length > 0 ? cat.questions[cat.questions.length - 1].points : 0;
+            cat.questions.push({
+                points: lastPoints + 20,
+                q: 'Nová otázka',
+                a: 'Odpověď',
+                played: false
+            });
+            saveState();
+            renderBoard();
+        }
+
         // Initialization
         loadState();
         renderBoard();
         renderTeams();
+
+        document.addEventListener('keydown', (e) => {
+            const overlay = document.getElementById('active-card-overlay');
+            const editModal = document.getElementById('edit-modal');
+            
+            // If edit modal is open
+            if (editModal.style.display === 'flex') {
+                if (e.key === 'Escape') closeEditModal();
+                if (e.key === 'Enter' && e.ctrlKey) saveEdit(); // Ctrl+Enter to save
+                return;
+            }
+
+            // If a card is open
+            if (overlay.classList.contains('active')) {
+                if (e.key === 'Escape') {
+                    closeActiveCard();
+                } else if (e.key === ' ' || e.key === 'Enter') {
+                    // Prevent default scrolling for spacebar
+                    if (e.key === ' ') e.preventDefault();
+                    flipActiveCard();
+                } else if (e.key === 'x' || e.key === 'X') {
+                    discardQuestion(); // Keyboard shortcut to discard
+                }
+            }
+        });
 
         // Check for F11 full screen (cross-browser)
         function checkFullscreen() {

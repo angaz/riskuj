@@ -37,8 +37,9 @@ Hru si můžete kompletně předělat podle sebe:
 Vše, co do hry napíšete, se **automaticky ukládá** do vašeho prohlížeče (i když stránku zavřete). Pokud si ale chcete připravit více her do zásoby, postupujte takto:
 
 1. Klikněte na tlačítko **"Import/Export"**.
-2. **Pro uložení (Export):** Klikněte na žluté tlačítko **"Kopírovat do schránky"**. Zkopírovaný text si poté vložte a uložte třeba do Wordu, Poznámkového bloku nebo do e-mailu.
-3. **Pro načtení (Import):** Zkopírujte váš dříve uložený text (z Wordu), vložte ho do tohoto okna a klikněte na **Uložit**.
+2. **Pro uložení (Export):** Klikněte na zelené tlačítko **"Stáhnout (.txt)"**. Hra se vám uloží do počítače jako textový soubor.
+3. **Pro načtení (Import):** Klikněte na modré tlačítko **"Nahrát (.txt)"**, vyberte váš dříve uložený soubor. Text se načte do okna. Následně klikněte na **"Uložit"**, čímž se hra spustí.
+*(Stále můžete text také ručně kopírovat a vkládat pomocí tlačítka "Kopírovat")*
 
 ---
 
@@ -51,7 +52,7 @@ A lightweight, fully interactive HTML game inspired by classic TV quiz shows lik
 2. **Reveal the Answer:** Click anywhere on the card (or press **Spacebar** / **Enter**) to flip it and reveal the answer.
 3. **Awarding Points:** If a team gets the answer correct, **Left-Click** on their team box at the bottom. Their score will increase, and the card will close.
 4. **Deducting Points:** If a team guesses incorrectly, **Right-Click** their team box. Their score will decrease, they will flash red, but the question will remain open for another team to steal!
-5. **Nobody Knows:** If no team knows the answer, click the **"Nikdo neví"** (Nobody knows) button at the bottom, or press the **X** key on your keyboard.
+5. **Nobody Knows:** If no team knows the answer, click the **"Nikdo neví"** (Nobody knows) button at the top left, or press the **X** key on your keyboard.
 
 **Keyboard Shortcuts:**
 - **Spacebar / Enter**: Flip the active card to show the answer.
@@ -62,11 +63,11 @@ A lightweight, fully interactive HTML game inspired by classic TV quiz shows lik
 Click **"Zapnout režim úprav"** (Turn on Edit Mode) in the top right corner to modify the board.
 - Click on any category header, question card, or team to change its text or point value.
 - Click the red **"Smazat"** (Delete) button to remove items.
-- Click the dashed **"+"** boxes to add unlimited new questions or whole new categories.
+- Click the dashed **"+"** boxes to add unlimited new questions, whole new categories, or new teams.
 - Click **"Vypnout režim úprav"** to save and play! The **"Resetovat hru"** (Reset Game) button sets all scores to 0 and resets played cards.
 
 ### 💾 Saving and Loading (Import/Export)
 Your game auto-saves in your browser. To create backups or share the game:
 1. Click **"Import/Export"**.
-2. Click the yellow **"Kopírovat do schránky"** (Copy to Clipboard) button to copy your board data. Save this text in Notepad or Word.
-3. To load a game later, paste the saved text into that box and click **"Uložit"** (Save).
+2. Click **"Stáhnout (.txt)"** (Download) to save your board as a text file to your computer.
+3. To load a game later, click **"Nahrát (.txt)"** (Upload) to select your file, then click **"Uložit"** (Save).

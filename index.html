@@ -931,11 +931,16 @@
 
             body.innerHTML = `
                 <p style="font-size: 14px; margin-bottom: 10px;">
-                    Zkopírujte tento text pro uložení hry nebo jeho úpravu v textovém editoru.<br>
-                    Vložte text sem a klikněte na Uložit pro jeho import.
+                    Uložte si hru do souboru (Stáhnout), nebo nahrajte dříve uloženou hru (Nahrát).<br>
+                    Můžete také text ručně zkopírovat nebo vložit.
                 </p>
                 <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                    <button onclick="navigator.clipboard.writeText(document.getElementById('import-export-textarea').value).then(() => alert('Zkopírováno!'))" style="margin-top: 0; background-color: var(--text-yellow); color: var(--bg-color);">Kopírovat do schránky</button>
+                    <button onclick="navigator.clipboard.writeText(document.getElementById('import-export-textarea').value).then(() => alert('Zkopírováno!'))" style="margin-top: 0; background-color: var(--text-yellow); color: var(--bg-color);">Kopírovat</button>
+                    <button onclick="downloadGameFile()" style="margin-top: 0; background-color: #4CAF50; color: white;">Stáhnout (.txt)</button>
+                    
+                    <!-- Hidden file input for uploading -->
+                    <input type="file" id="game-file-upload" accept=".txt" style="display: none;" onchange="handleFileUpload(event)">
+                    <button onclick="document.getElementById('game-file-upload').click()" style="margin-top: 0; background-color: #2196F3; color: white;">Nahrát (.txt)</button>
                 </div>
                 <textarea id="import-export-textarea" style="height: 300px; font-family: monospace; white-space: pre;">${exportText}</textarea>
             `;
@@ -959,6 +964,32 @@
                 lines.push("");
             });
             return lines.join("\n");
+        }
+
+        function downloadGameFile() {
+            const text = document.getElementById('import-export-textarea').value;
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `riskuj_hra_${new Date().toISOString().slice(0,10)}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('import-export-textarea').value = e.target.result;
+            };
+            reader.readAsText(file);
         }
 
         function parseImportText(text) {

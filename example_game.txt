@@ -1,46 +1,39 @@
 [Týmy]
-Tým 1 | 0
-Tým 2 | 0
-Tým 3 | 0
+Tým 1 ; 0
+Tým 2 ; 0
+Tým 3 ; 0
 
-[Kategorie] VÝLET DO BRUSELU
-20 | Kde sídlí Evropská komise? | V Bruselu
-40 | Jak se jmenuje slavná bruselská soška chlapce? | Manneken Pis
-60 | Které atomium v Bruselu připomíná krystal železa? | Atomyum
-80 | Jak se nazývá hlavní náměstí v Bruselu? | Grand Place
-100 | Která mezinárodní organizace má sídlo v Bruselu (zkratka)? | NATO
+[Kategorie] KOLIK TO VÁŽÍ?
+20 ; Přibližná hmotnost dospělého slona afrického (v tunách) ; 6 tun
+40 ; Kolik zhruba váží lidský mozek (v gramech) ; 1300-1400 g
+60 ; Hmotnost standardního cihlového bloku (v kg) ; cca 3 kg
+80 ; Hmotnost Modré velryby (v tunách) ; až 180 tun
+100 ; Hmotnost Měsíce v poměru k Zemi ; cca 1/81 hmotnosti Země
 
-[Kategorie] JEDNA SAMOHLÁSKA VYPADLA
-20 | D_M (Dům) | Dům
-40 | K_N (Kůň) | Kůň
-60 | S_L (Sůl) | Sůl
-80 | L_S (Les) | Les
-100 | H_R (Hra) | Hra
+[Kategorie] FILMOVÉ HLÁŠKY
+20 ; "Ať žije, kdo přichází!" - odkud je tato věta? ; Pelíšky
+40 ; "Já jsem tvůj otec." - kdo to říká? ; Darth Vader
+60 ; "Jmenuji se Bond, James Bond." - jak se jmenuje herec, který ho hrál jako první? ; Sean Connery
+80 ; "Nechci slevu zadarmo!" - z jakého filmu? ; Marečku, podejte mi pero!
+100 ; "Život je jako bonboniéra..." - jak se jmenuje tento film? ; Forrest Gump
 
-[Kategorie] STAROVĚKÉ ŘÍŠE
-20 | Kdo byl prvním císařem Říma? | Augustus
-40 | Která říše stavěla pyramidy? | Egyptská
-60 | Jak se jmenoval slavný kartaginský vojevůdce? | Hannibal
-80 | Kdo vedl perskou říši proti Řecku? | Xerxés
-100 | Která říše ovládala Mezopotámii? | Sumerská
+[Kategorie] ZÁHADY SVĚTA
+20 ; Co údajně spadlo v roce 1947 v Roswellu? ; UFO / Mimozemská loď
+40 ; Kdo stojí za tajemnými sochami Moai na Velikonočním ostrově? ; Rapanujci
+60 ; Jak se jmenuje loď, která se potopila při své první plavbě v roce 1912? ; Titanic
+80 ; Co je to "Bermudský trojúhelník"? ; Oblast záhadných zmizení lodí a letadel
+100 ; Kdo postavil Stonehenge? ; Neznámí stavitelé z neolitu
 
-[Kategorie] VELIČINY PODLE JEDNOTEK
-20 | Metr (m) | Délka
-40 | Kilogram (kg) | Hmotnost
-60 | Sekunda (s) | Čas
-80 | Ampér (A) | Elektrický proud
-100 | Kelvin (K) | Termodynamická teplota
+[Kategorie] PODIVNÁ ZVÍŘATA
+20 ; Jak se jmenuje zvíře, které jako jediné savec snáší vejce (a není to ptakopysk)? ; Ježura
+40 ; Který mořský živočich má tři srdce? ; Chobotnice
+60 ; Jak se jmenuje nejrychlejší suchozemské zvíře? ; Gepard
+80 ; Které zvíře má otisky prstů nejpodobnější člověku? ; Koala
+100 ; Jak se jmenuje "nejpomalenější" zvíře na světě? ; Lenochod
 
-[Kategorie] LINGVISTICKÉ "TÍVY"
-20 | Co znamená "tíva" v přeneseném významu? | Obtíž, břemeno
-40 | Jak se tvoří množné číslo? | Přidáním koncovky
-60 | Je "tíva" spisovné slovo? | Ano
-80 | Jaký je rod podstatného jména "tíva"? | Ženský
-100 | Které slovo je antonymem "tívy"? | Lehkost
-
-[Kategorie] VODNÉ VECI
-20 | Co tvoří 70 % povrchu Země? | Voda
-40 | Jak se nazývá změna skupenství z kapaliny na plyn? | Odpařování
-60 | Co je to ledovec? | Masa ledu
-80 | Jak se nazývá největší oceán? | Tichý oceán
-100 | Co je to hydrosféra? | Vodní obal Země
+[Kategorie] ČESKÁ HISTORIE
+20 ; Kdo byl prvním českým králem (získal dědičný titul)? ; Vratislav II.
+40 ; Jak se jmenoval hrad, kde byl vězněn Václav Havel? ; Ruzyň / Bory (nebo obecně vězení)
+60 ; V jakém roce proběhla bitva na Bílé hoře? ; 1620
+80 ; Kdo byl autorem Rukopisů královédvorského a zelenohorského? ; Václav Hanka (a další)
+100 ; Jak se jmenoval poslední český král? ; Karel I. (Karel IV. Habsburský)

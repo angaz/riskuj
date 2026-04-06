@@ -37,8 +37,9 @@ Hru si můžete kompletně předělat podle sebe:
 Vše, co do hry napíšete, se **automaticky ukládá** do vašeho prohlížeče (i když stránku zavřete). Pokud si ale chcete připravit více her do zásoby, postupujte takto:
 
 1. Klikněte na tlačítko **"Import/Export"**.
-2. **Pro uložení (Export):** Klikněte na zelené tlačítko **"Stáhnout (.txt)"**. Hra se vám uloží do počítače jako textový soubor.
-3. **Pro načtení (Import):** Klikněte na modré tlačítko **"Nahrát (.txt)"**, vyberte váš dříve uložený soubor. Text se načte do okna. Následně klikněte na **"Uložit"**, čímž se hra spustí.
+2. **Nahrát příklad:** Klikněte na fialové tlačítko **"Nahrát příklad"** pro načtení předpřipravené ukázkové hry.
+3. **Pro uložení (Export):** Klikněte na zelené tlačítko **"Stáhnout (.txt)"**. Hra se vám uloží do počítače jako textový soubor.
+4. **Pro načtení (Import):** Klikněte na modré tlačítko **"Nahrát (.txt)"**, vyberte váš dříve uložený soubor. Text se načte do okna. Následně klikněte na **"Uložit"**, čímž se hra spustí.
 *(Stále můžete text také ručně kopírovat a vkládat pomocí tlačítka "Kopírovat")*
 
 ---
@@ -69,5 +70,4 @@ Click **"Zapnout režim úprav"** (Turn on Edit Mode) in the top right corner to
 ### 💾 Saving and Loading (Import/Export)
 Your game auto-saves in your browser. To create backups or share the game:
 1. Click **"Import/Export"**.
-2. Click **"Stáhnout (.txt)"** (Download) to save your board as a text file to your computer.
-3. To load a game later, click **"Nahrát (.txt)"** (Upload) to select your file, then click **"Uložit"** (Save).
+2. Click **"Nahrát příklad"** (Load Example) to test a pre-made game, **"Stáhnout (.txt)"** (Download) to save your current board, or **"Nahrát (.txt)"** (Upload) to load a saved game from your computer. Then click **"Uložit"** (Save) to apply changes.

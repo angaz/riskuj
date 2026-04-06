@@ -249,6 +249,13 @@
         .card-back {
             transform: rotateY(180deg);
             color: var(--text-yellow);
+            opacity: 0;
+            transition: opacity 0.1s;
+        }
+
+        #active-card-overlay.show-answer .card-back {
+            opacity: 1;
+            transition: opacity 0.1s 0.2s;
         }
 
         .card-back-q {
@@ -689,7 +696,15 @@
 
             document.getElementById('board').style.opacity = '0';
 
-            document.querySelectorAll('.team').forEach(t => t.classList.add('active-scoring'));
+            document.querySelectorAll('.team').forEach(t => {
+                // Force reset any lingering styles before applying pulse
+                t.style.animation = '';
+                t.style.boxShadow = '';
+                t.style.borderColor = '';
+                t.classList.remove('celebrate');
+                
+                t.classList.add('active-scoring');
+            });
 
             // Auto-fit text size after a tiny delay to ensure DOM is rendered
             setTimeout(autoFitCardText, 10);
@@ -740,7 +755,14 @@
         function closeActiveCard() {
             document.getElementById('active-card-overlay').classList.remove('active');
             document.getElementById('board').style.opacity = '1';
-            document.querySelectorAll('.team').forEach(t => t.classList.remove('active-scoring'));
+            document.querySelectorAll('.team').forEach(t => {
+                t.classList.remove('active-scoring');
+                // Force reset all inline styles and animations
+                t.style.animation = '';
+                t.style.boxShadow = '';
+                t.style.borderColor = '';
+                t.classList.remove('celebrate');
+            });
             activeCol = null;
             activeRow = null;
         }
@@ -830,11 +852,20 @@
                 teamEl.querySelector('.team-score').textContent = gameState.teams[teamIndex].score;
                 
                 // Add a brief red shake animation for penalty
+                // Clear existing animation first to allow rapid re-clicking
+                teamEl.style.animation = 'none';
+                void teamEl.offsetWidth; // trigger reflow
+                
                 teamEl.style.animation = 'shake 0.5s';
                 teamEl.style.boxShadow = '0 0 20px #f44336';
                 teamEl.style.borderColor = '#f44336';
                 
-                setTimeout(() => {
+                // Clear any existing timeout from rapid clicking
+                if (teamEl.dataset.shakeTimeout) {
+                    clearTimeout(parseInt(teamEl.dataset.shakeTimeout));
+                }
+                
+                const timeoutId = setTimeout(() => {
                     teamEl.style.animation = '';
                     teamEl.style.boxShadow = '';
                     teamEl.style.borderColor = '';
@@ -849,6 +880,8 @@
                     // Remove 'none' to restart the CSS animation on all teams simultaneously
                     activeTeams.forEach(t => { t.style.animation = ''; });
                 }, 500);
+                
+                teamEl.dataset.shakeTimeout = timeoutId;
 
                 // Note: We deliberately DO NOT mark the card as played or close it.
                 // This leaves the question open for other teams to steal.
@@ -976,6 +1009,7 @@
                 <div style="display: flex; gap: 10px; margin-bottom: 10px;">
                     <button onclick="navigator.clipboard.writeText(document.getElementById('import-export-textarea').value).then(() => alert('Zkopírováno!'))" style="margin-top: 0; background-color: var(--text-yellow); color: var(--bg-color);">Kopírovat</button>
                     <button onclick="downloadGameFile()" style="margin-top: 0; background-color: #4CAF50; color: white;">Stáhnout (.txt)</button>
+                    <button onclick="loadExampleGame()" style="margin-top: 0; background-color: #9C27B0; color: white;">Nahrát příklad</button>
                     
                     <!-- Hidden file input for uploading -->
                     <input type="file" id="game-file-upload" accept=".txt" style="display: none;" onchange="handleFileUpload(event)">
@@ -1173,6 +1207,50 @@
         loadState();
         renderBoard();
         renderTeams();
+
+        const exampleGameData = `[Týmy]
+Tým 1 ; 0
+Tým 2 ; 0
+Tým 3 ; 0
+
+[Kategorie] KOLIK TO VÁŽÍ?
+20 ; Přibližná hmotnost dospělého slona afrického (v tunách) ; 6 tun
+40 ; Kolik zhruba váží lidský mozek (v gramech) ; 1300-1400 g
+60 ; Hmotnost standardního cihlového bloku (v kg) ; cca 3 kg
+80 ; Hmotnost Modré velryby (v tunách) ; až 180 tun
+100 ; Hmotnost Měsíce v poměru k Zemi ; cca 1/81 hmotnosti Země
+
+[Kategorie] FILMOVÉ HLÁŠKY
+20 ; "Ať žije, kdo přichází!" - odkud je tato věta? ; Pelíšky
+40 ; "Já jsem tvůj otec." - kdo to říká? ; Darth Vader
+60 ; "Jmenuji se Bond, James Bond." - jak se jmenuje herec, který ho hrál jako první? ; Sean Connery
+80 ; "Nechci slevu zadarmo!" - z jakého filmu? ; Marečku, podejte mi pero!
+100 ; "Život je jako bonboniéra..." - jak se jmenuje tento film? ; Forrest Gump
+
+[Kategorie] ZÁHADY SVĚTA
+20 ; Co údajně spadlo v roce 1947 v Roswellu? ; UFO / Mimozemská loď
+40 ; Kdo stojí za tajemnými sochami Moai na Velikonočním ostrově? ; Rapanujci
+60 ; Jak se jmenuje loď, která se potopila při své první plavbě v roce 1912? ; Titanic
+80 ; Co je to "Bermudský trojúhelník"? ; Oblast záhadných zmizení lodí a letadel
+100 ; Kdo postavil Stonehenge? ; Neznámí stavitelé z neolitu
+
+[Kategorie] PODIVNÁ ZVÍŘATA
+20 ; Jak se jmenuje zvíře, které jako jediné savec snáší vejce (a není to ptakopysk)? ; Ježura
+40 ; Který mořský živočich má tři srdce? ; Chobotnice
+60 ; Jak se jmenuje nejrychlejší suchozemské zvíře? ; Gepard
+80 ; Které zvíře má otisky prstů nejpodobnější člověku? ; Koala
+100 ; Jak se jmenuje "nejpomalenější" zvíře na světě? ; Lenochod
+
+[Kategorie] ČESKÁ HISTORIE
+20 ; Kdo byl prvním českým králem (získal dědičný titul)? ; Vratislav II.
+40 ; Jak se jmenoval hrad, kde byl vězněn Václav Havel? ; Ruzyň / Bory (nebo obecně vězení)
+60 ; V jakém roce proběhla bitva na Bílé hoře? ; 1620
+80 ; Kdo byl autorem Rukopisů královédvorského a zelenohorského? ; Václav Hanka (a další)
+100 ; Jak se jmenoval poslední český král? ; Karel I. (Karel IV. Habsburský)`;
+
+        function loadExampleGame() {
+            document.getElementById('import-export-textarea').value = exampleGameData;
+        }
 
         document.addEventListener('keydown', (e) => {
             const overlay = document.getElementById('active-card-overlay');

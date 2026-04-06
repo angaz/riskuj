@@ -157,10 +157,11 @@
 
         #discard-btn {
             position: absolute;
-            bottom: 20px;
+            top: 20px;
+            left: 20px;
             padding: 10px 20px;
             font-size: 1.5vw;
-            background-color: var(--card-border);
+            background-color: #d32f2f;
             color: var(--text-white);
             border: none;
             border-radius: 8px;
@@ -169,10 +170,11 @@
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
 
         #discard-btn:hover {
-            background-color: #3366cc;
+            background-color: #b71c1c;
         }
 
         #active-card-overlay.show-answer #discard-btn {
@@ -257,12 +259,14 @@
 
         .close-btn {
             position: absolute;
-            top: 10px;
-            right: 20px;
-            font-size: 40px;
+            top: 20px;
+            right: 30px;
+            font-size: 50px;
             cursor: pointer;
             color: var(--text-white);
             z-index: 10;
+            line-height: 1;
+            text-shadow: 0 4px 6px rgba(0,0,0,0.5);
         }
 
         .team.active-scoring {
@@ -647,6 +651,44 @@
             document.getElementById('board').style.opacity = '0';
 
             document.querySelectorAll('.team').forEach(t => t.classList.add('active-scoring'));
+
+            // Auto-fit text size after a tiny delay to ensure DOM is rendered
+            setTimeout(autoFitCardText, 10);
+        }
+
+        function autoFitCardText() {
+            const front = document.getElementById('active-q');
+            const back = document.querySelector('.card-back');
+            const backQ = document.getElementById('active-a-q');
+            const backA = document.getElementById('active-a-text');
+
+            // Reset to default sizes
+            front.style.fontSize = '4vw';
+            backQ.style.fontSize = '2vw';
+            backA.style.fontSize = '4vw';
+
+            // Temporarily hide scrollbars to get accurate content height measurement
+            front.style.overflowY = 'hidden';
+            back.style.overflowY = 'hidden';
+
+            // Shrink front card text until it fits (down to a minimum of 1.5vw)
+            let frontSize = 4.0;
+            while (front.scrollHeight > front.clientHeight && frontSize > 1.5) {
+                frontSize -= 0.1;
+                front.style.fontSize = frontSize + 'vw';
+            }
+
+            // Shrink back card text proportionally until it fits (down to a minimum scale of 0.4x)
+            let backSizeMultiplier = 1.0;
+            while (back.scrollHeight > back.clientHeight && backSizeMultiplier > 0.4) {
+                backSizeMultiplier -= 0.05;
+                backQ.style.fontSize = (2 * backSizeMultiplier) + 'vw';
+                backA.style.fontSize = (4 * backSizeMultiplier) + 'vw';
+            }
+
+            // Restore overflow behavior (scrollbars will appear if text is still too long at minimum size)
+            front.style.overflowY = 'auto';
+            back.style.overflowY = 'auto';
         }
 
         function flipActiveCard() {
@@ -1101,7 +1143,12 @@
                 document.body.classList.remove('is-fullscreen');
             }
         }
-        window.addEventListener('resize', checkFullscreen);
+        window.addEventListener('resize', () => {
+            checkFullscreen();
+            if (document.getElementById('active-card-overlay').classList.contains('active')) {
+                autoFitCardText();
+            }
+        });
         document.addEventListener('fullscreenchange', checkFullscreen);
         document.addEventListener('mozfullscreenchange', checkFullscreen);
         document.addEventListener('webkitfullscreenchange', checkFullscreen);

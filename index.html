@@ -409,6 +409,8 @@
             border: 2px solid var(--card-border);
             width: 80%;
             max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
             color: var(--text-white);
         }
 
@@ -521,6 +523,8 @@
         let gameState = null;
         let isEditMode = false;
         let editTarget = null; // { type: 'category'|'question'|'team', col: x, row: y, index: i }
+        let currentEditImages = [];
+        let currentEditAnswerImages = [];
 
         function loadState() {
             const saved = localStorage.getItem('riskujState');
@@ -686,9 +690,86 @@
             isFlipped = false;
 
             const question = gameState.categories[col].questions[row];
-            document.getElementById('active-q').textContent = question.q;
-            document.getElementById('active-a-q').textContent = question.q;
-            document.getElementById('active-a-text').textContent = question.a;
+            const images = question.images || [];
+            const answerImages = question.answerImages || [];
+
+            const activeQ = document.getElementById('active-q');
+            activeQ.innerHTML = '';
+            
+            if (images.length > 0) {
+                const imgContainer = document.createElement('div');
+                imgContainer.style.display = 'flex';
+                imgContainer.style.flexWrap = 'wrap';
+                imgContainer.style.justifyContent = 'center';
+                imgContainer.style.gap = '10px';
+                imgContainer.style.marginBottom = '20px';
+                
+                images.forEach(imgSrc => {
+                    const img = document.createElement('img');
+                    img.src = imgSrc;
+                    img.style.maxHeight = '40vh';
+                    img.style.maxWidth = '90%';
+                    img.style.objectFit = 'contain';
+                    imgContainer.appendChild(img);
+                });
+                activeQ.appendChild(imgContainer);
+            }
+            const qText = document.createElement('div');
+            qText.textContent = question.q;
+            qText.id = 'active-q-text';
+            activeQ.appendChild(qText);
+
+            const activeAQ = document.getElementById('active-a-q');
+            activeAQ.innerHTML = '';
+            if (images.length > 0) {
+                const imgContainer = document.createElement('div');
+                imgContainer.style.display = 'flex';
+                imgContainer.style.flexWrap = 'wrap';
+                imgContainer.style.justifyContent = 'center';
+                imgContainer.style.gap = '10px';
+                imgContainer.style.marginBottom = '10px';
+                
+                images.forEach(imgSrc => {
+                    const img = document.createElement('img');
+                    img.src = imgSrc;
+                    img.style.maxHeight = '20vh';
+                    img.style.maxWidth = '90%';
+                    img.style.objectFit = 'contain';
+                    imgContainer.appendChild(img);
+                });
+                activeAQ.appendChild(imgContainer);
+            }
+            const aqText = document.createElement('div');
+            aqText.textContent = question.q;
+            aqText.id = 'active-a-q-text';
+            activeAQ.appendChild(aqText);
+
+            const activeAText = document.getElementById('active-a-text');
+            activeAText.innerHTML = '';
+
+            if (answerImages.length > 0) {
+                const answerImgContainer = document.createElement('div');
+                answerImgContainer.style.display = 'flex';
+                answerImgContainer.style.flexWrap = 'wrap';
+                answerImgContainer.style.justifyContent = 'center';
+                answerImgContainer.style.gap = '10px';
+                answerImgContainer.style.marginBottom = '20px';
+                
+                answerImages.forEach(imgSrc => {
+                    const img = document.createElement('img');
+                    img.src = imgSrc;
+                    img.style.maxHeight = '30vh';
+                    img.style.maxWidth = '90%';
+                    img.style.objectFit = 'contain';
+                    answerImgContainer.appendChild(img);
+                });
+                activeAText.appendChild(answerImgContainer);
+            }
+            
+            const aText = document.createElement('div');
+            aText.textContent = question.a;
+            aText.id = 'active-a-text-content';
+            activeAText.appendChild(aText);
 
             const overlay = document.getElementById('active-card-overlay');
             overlay.classList.remove('show-answer');
@@ -712,14 +793,17 @@
 
         function autoFitCardText() {
             const front = document.getElementById('active-q');
+            const frontText = document.getElementById('active-q-text') || front;
             const back = document.querySelector('.card-back');
             const backQ = document.getElementById('active-a-q');
+            const backQText = document.getElementById('active-a-q-text') || backQ;
             const backA = document.getElementById('active-a-text');
+            const backAContent = document.getElementById('active-a-text-content') || backA;
 
             // Reset to default sizes
-            front.style.fontSize = '4vw';
-            backQ.style.fontSize = '2vw';
-            backA.style.fontSize = '4vw';
+            frontText.style.fontSize = '4vw';
+            backQText.style.fontSize = '2vw';
+            backAContent.style.fontSize = '4vw';
 
             // Temporarily hide scrollbars to get accurate content height measurement
             front.style.overflowY = 'hidden';
@@ -729,15 +813,15 @@
             let frontSize = 4.0;
             while (front.scrollHeight > front.clientHeight && frontSize > 1.5) {
                 frontSize -= 0.1;
-                front.style.fontSize = frontSize + 'vw';
+                frontText.style.fontSize = frontSize + 'vw';
             }
 
             // Shrink back card text proportionally until it fits (down to a minimum scale of 0.4x)
             let backSizeMultiplier = 1.0;
             while (back.scrollHeight > back.clientHeight && backSizeMultiplier > 0.4) {
                 backSizeMultiplier -= 0.05;
-                backQ.style.fontSize = (2 * backSizeMultiplier) + 'vw';
-                backA.style.fontSize = (4 * backSizeMultiplier) + 'vw';
+                backQText.style.fontSize = (2 * backSizeMultiplier) + 'vw';
+                backAContent.style.fontSize = (4 * backSizeMultiplier) + 'vw';
             }
 
             // Restore overflow behavior (scrollbars will appear if text is still too long at minimum size)
@@ -970,14 +1054,21 @@
             } else if (type === 'question') {
                 title.textContent = 'Upravit otázku';
                 const q = gameState.categories[target.col].questions[target.row];
+                
+                currentEditImages = q.images ? [...q.images] : [];
+                currentEditAnswerImages = q.answerImages ? [...q.answerImages] : [];
+
                 body.innerHTML = `
                     <label>Body</label>
                     <input type="number" id="edit-val-1" value="${q.points}">
                     <label>Otázka</label>
-                    <textarea id="edit-val-2">${escapeHTML(q.q)}</textarea>
+                    <textarea id="edit-val-2" placeholder="Kliknutím sem a stisknutím Ctrl+V vložíte obrázek k otázce">${escapeHTML(q.q)}</textarea>
+                    <div id="edit-img-preview-container" style="margin-bottom: 10px;"></div>
                     <label>Odpověď</label>
-                    <textarea id="edit-val-3">${escapeHTML(q.a)}</textarea>
+                    <textarea id="edit-val-3" placeholder="Kliknutím sem a stisknutím Ctrl+V vložíte obrázek k odpovědi">${escapeHTML(q.a)}</textarea>
+                    <div id="edit-answer-img-preview-container" style="margin-bottom: 10px;"></div>
                 `;
+                renderEditImages();
                 deleteBtn.style.display = 'inline-block';
             } else if (type === 'import-export') {
                 // Ensure delete button is hidden for import/export
@@ -989,6 +1080,61 @@
         function closeEditModal() {
             document.getElementById('edit-modal').style.display = 'none';
             editTarget = null;
+        }
+
+        function removeEditImage(type, index) {
+            if (type === 'question') {
+                currentEditImages.splice(index, 1);
+            } else {
+                currentEditAnswerImages.splice(index, 1);
+            }
+            renderEditImages();
+        }
+
+        function renderEditImages() {
+            renderImageSet('edit-img-preview-container', currentEditImages, 'question');
+            renderImageSet('edit-answer-img-preview-container', currentEditAnswerImages, 'answer');
+        }
+
+        function renderImageSet(containerId, images, type) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            
+            container.innerHTML = '';
+            if (images.length === 0) return;
+
+            const flexContainer = document.createElement('div');
+            flexContainer.style.display = 'flex';
+            flexContainer.style.flexWrap = 'wrap';
+            flexContainer.style.gap = '10px';
+            flexContainer.style.justifyContent = 'center';
+
+            images.forEach((imgSrc, index) => {
+                const wrapper = document.createElement('div');
+                wrapper.style.display = 'flex';
+                wrapper.style.flexDirection = 'column';
+                wrapper.style.alignItems = 'center';
+
+                const img = document.createElement('img');
+                img.src = imgSrc;
+                img.style.maxWidth = '100%';
+                img.style.maxHeight = '200px';
+                img.style.marginBottom = '5px';
+
+                const btn = document.createElement('button');
+                btn.textContent = 'Odstranit obrázek';
+                btn.style.marginTop = '0';
+                btn.style.padding = '5px 10px';
+                btn.style.fontSize = '12px';
+                btn.style.backgroundColor = '#d32f2f';
+                btn.onclick = () => removeEditImage(type, index);
+
+                wrapper.appendChild(img);
+                wrapper.appendChild(btn);
+                flexContainer.appendChild(wrapper);
+            });
+
+            container.appendChild(flexContainer);
         }
 
         function openImportExport() {
@@ -1032,7 +1178,11 @@
                 cat.questions.forEach(q => {
                     const cleanQ = q.q.replace(/\n/g, '\\n');
                     const cleanA = q.a.replace(/\n/g, '\\n');
-                    lines.push(`${q.points} ; ${cleanQ} ; ${cleanA}`);
+                    
+                    const qImagesPart = (q.images && q.images.length > 0) ? q.images.map(img => ` ; Q:${img}`).join('') : '';
+                    const aImagesPart = (q.answerImages && q.answerImages.length > 0) ? q.answerImages.map(img => ` ; A:${img}`).join('') : '';
+                    
+                    lines.push(`${q.points} ; ${cleanQ} ; ${cleanA}${qImagesPart}${aImagesPart}`);
                 });
                 lines.push("");
             });
@@ -1115,13 +1265,32 @@
                     
                     if (parts.length >= 3) {
                         const pointsStr = parts.shift();
-                        const aStr = parts.pop();
-                        const qStr = parts.join(sep); // Everything left in the middle is the question
+                        let aStr, qStr;
+                        const images = [];
+                        const answerImages = [];
+                        
+                        while (parts.length >= 3 && (parts[parts.length - 1].trim().startsWith('Q:data:image/') || parts[parts.length - 1].trim().startsWith('A:data:image/'))) {
+                            const imgStr = parts.pop().trim();
+                            if (imgStr.startsWith('Q:')) {
+                                images.unshift(imgStr.substring(2));
+                            } else if (imgStr.startsWith('A:')) {
+                                answerImages.unshift(imgStr.substring(2));
+                            }
+                        }
+                        // Support the intermediate format (just data:image/ without prefix goes to question images)
+                        while (parts.length >= 3 && parts[parts.length - 1].trim().startsWith('data:image/')) {
+                            images.unshift(parts.pop().trim());
+                        }
+
+                        aStr = parts.pop();
+                        qStr = parts.join(sep); // Everything left in the middle is the question
                         
                         currentCategory.questions.push({
                             points: parseInt(pointsStr.trim()) || 0,
                             q: qStr.trim().replace(/\\n/g, '\n'),
                             a: aStr.trim().replace(/\\n/g, '\n'),
+                            images: images,
+                            answerImages: answerImages,
                             played: false
                         });
                     }
@@ -1148,6 +1317,8 @@
                 q.points = parseInt(document.getElementById('edit-val-1').value) || 0;
                 q.q = document.getElementById('edit-val-2').value;
                 q.a = document.getElementById('edit-val-3').value;
+                q.images = [...currentEditImages];
+                q.answerImages = [...currentEditAnswerImages];
             } else if (editTarget.type === 'import-export') {
                 const text = document.getElementById('import-export-textarea').value;
                 gameState = parseImportText(text);
@@ -1251,6 +1422,57 @@ Tým 3 ; 0
         function loadExampleGame() {
             document.getElementById('import-export-textarea').value = exampleGameData;
         }
+
+        document.addEventListener('paste', function (e) {
+            if (document.getElementById('edit-modal').style.display !== 'flex') return;
+            if (!editTarget || editTarget.type !== 'question') return;
+
+            const isAnswerTarget = document.activeElement && document.activeElement.id === 'edit-val-3';
+
+            var items = e.clipboardData.items;
+            for (var i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf('image') !== -1) {
+                    var blob = items[i].getAsFile();
+                    var reader = new FileReader();
+                    reader.onload = function(event) {
+                        const img = new Image();
+                        img.onload = function() {
+                            const canvas = document.createElement('canvas');
+                            const MAX_WIDTH = 800;
+                            const MAX_HEIGHT = 600;
+                            let width = img.width;
+                            let height = img.height;
+
+                            if (width > height) {
+                                if (width > MAX_WIDTH) {
+                                    height *= MAX_WIDTH / width;
+                                    width = MAX_WIDTH;
+                                }
+                            } else {
+                                if (height > MAX_HEIGHT) {
+                                    width *= MAX_HEIGHT / height;
+                                    height = MAX_HEIGHT;
+                                }
+                            }
+                            canvas.width = width;
+                            canvas.height = height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, width, height);
+                            const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                            
+                            if (isAnswerTarget) {
+                                currentEditAnswerImages.push(dataUrl);
+                            } else {
+                                currentEditImages.push(dataUrl);
+                            }
+                            renderEditImages();
+                        }
+                        img.src = event.target.result;
+                    };
+                    reader.readAsDataURL(blob);
+                }
+            }
+        });
 
         document.addEventListener('keydown', (e) => {
             const overlay = document.getElementById('active-card-overlay');

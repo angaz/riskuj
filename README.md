@@ -28,6 +28,7 @@ Toto je jednoduchá hra na motivy soutěže Riskuj! Funguje přímo ve vašem pr
 Hru si můžete kompletně předělat podle sebe:
 1. Vpravo nahoře klikněte na tlačítko **"Zapnout režim úprav"**.
 2. Nyní můžete kliknout na cokoliv na obrazovce (kategorie, políčka s otázkami, týmy) a přepsat text nebo upravit body.
+   * **Tip pro obrázky:** K otázce i odpovědi můžete vložit obrázek (nebo více obrázků) zkopírovaný do schránky. **Klikněte do textového pole pro otázku nebo pro odpověď** a stiskněte klávesovou zkratku `Ctrl+V` (nebo `Cmd+V`). Obrázky se zobrazí nad textem a budou se ukládat spolu se hrou.
 3. Pokud chcete něco odstranit, klikněte na to a v okénku vyberte červené tlačítko **"Smazat"**.
 4. Nové otázky a kategorie přidáte kliknutím na políčka s plusem **"+"**.
 5. Jakmile máte hru připravenou, klikněte na **"Vypnout režim úprav"**. Tlačítko **"Resetovat hru"** vynuluje skóre všech týmů a vrátí zpět všechny odehrané otázky.
@@ -63,6 +64,7 @@ A lightweight, fully interactive HTML game inspired by classic TV quiz shows lik
 ### ✏️ Editing the Game
 Click **"Zapnout režim úprav"** (Turn on Edit Mode) in the top right corner to modify the board.
 - Click on any category header, question card, or team to change its text or point value.
+  - **Pro Tip (Images):** You can paste multiple images directly from your clipboard to both the question and the answer. **Click inside the Question or Answer text box**, then press `Ctrl+V` (or `Cmd+V`). The images will be displayed above the text and saved with your game.
 - Click the red **"Smazat"** (Delete) button to remove items.
 - Click the dashed **"+"** boxes to add unlimited new questions, whole new categories, or new teams.
 - Click **"Vypnout režim úprav"** to save and play! The **"Resetovat hru"** (Reset Game) button sets all scores to 0 and resets played cards.
